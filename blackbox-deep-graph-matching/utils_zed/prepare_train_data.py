@@ -265,7 +265,7 @@ if __name__ == "__main__":
     
     mkdirs(sketch_out)
     mkdirs(color_out)
-    # prepare_image(path_image_in, path_image_out)
+    prepare_image(path_image_in, path_image_out)
     #----------------annotation---------
     print("Preparing annotation")
     path_annot_in = path_image_in #same path as image
@@ -291,5 +291,5 @@ if __name__ == "__main__":
 
     #---------------matching_info----------
     print("Preparing matching_ìno")
-    # prepare_matching(path_root_in, path_root_out)
+    prepare_matching(path_root_in, path_root_out)
 
