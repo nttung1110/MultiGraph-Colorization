@@ -1,0 +1,12 @@
+natsort
+tqdm
+numpy
+scipy
+opencv-python
+imgaug
+Pillow
+boto3
+torch==1.1.0
+torchvision==0.3.0
+tensorboardX
+scikit-image==0.15.0

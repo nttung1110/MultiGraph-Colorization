@@ -1,0 +1,37 @@
+{
+    "BATCH_SIZE": 1,
+    "DATASET_NAME": "Geek",
+    "exclude_willow_classes": false,
+    "OUTPUT_PATH": "results/geek_augment_train_1000_iters", 
+    "EVAL": {
+      "SAMPLES": 10,
+      "num_graphs_in_matching_instance": 2
+    },
+    "BB_GM": {
+      "lambda_val": 80.0,
+      "solver_name": "lpmp",
+      "solver_params": {
+        "timeout": 1000,
+        "primalComputationInterval": 10,
+        "maxIter": 100
+      }
+    },
+    "train_sampling": "all",
+    "eval_sampling": "all",
+    "save_checkpoint": true,
+    "RANDOM_SEED": 123,
+    "warmstart_path": null,
+    "TRAIN": {
+      "EPOCH_ITERS": 1000,
+      "LR": 0.02,
+      "lr_schedule": "long_halving",
+      "num_graphs_in_matching_instance": 2
+    },
+    "STATISTIC_STEP": 20,
+    "visualize": false,
+    "visualization_params": {
+      "reduced_vis": true
+    },
+    "evaluate_only": false
+  }
+  

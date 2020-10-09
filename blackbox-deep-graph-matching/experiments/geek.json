@@ -1,0 +1,29 @@
+{
+    "default_json": "experiments/geek_basic.json",
+    "train_sampling": "all",
+    "evaluate_only": false,
+    "eval_sampling": "all",
+    "BB_GM": {
+      "solver_name": "multigraph",
+      "solver_params": {
+         "maxIter": 200,
+         "innerIteration": 10,
+         "presolveIterations": 30,
+         "primalCheckingTriplets": 100,
+         "multigraphMatchingRoundingMethod": "MCF_PS",
+         "tighten": "",
+         "tightenIteration": 50,
+         "tightenInterval": 20,
+         "tightenConstraintsPercentage": 0.1,
+         "tightenReparametrization": "uniform:0.5"
+      }
+    },
+    "EVAL": {
+      "num_graphs_in_matching_instance": 2
+    },
+    "TRAIN": {
+      "num_graphs_in_matching_instance": 2
+    },
+    "model_dir": "results/geek_augment_train_1000_iters"
+  }
+  
