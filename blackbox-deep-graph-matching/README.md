@@ -23,6 +23,8 @@ You should prepare data folder for the script inference/main.py to perform the i
 
 + experiments: stores config for training
 
++ data: implements Geek dataloader for pytorch module(should pay attention to Geek.py and data_loader_multigraph_geek.py only)
+
 + hades_painting: stores tools supporting training
 
 + inference: inference module
