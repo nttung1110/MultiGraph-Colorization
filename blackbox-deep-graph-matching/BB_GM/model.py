@@ -64,6 +64,8 @@ class Net(utils.backbone.VGG16_bn):
             node_features = torch.cat((U, F), dim=-1)
             graph.x = node_features
 
+            import pdb 
+            pdb.set_trace()
             graph = self.message_pass_node_features(graph)
             orig_graph = self.build_edge_features_from_node_features(graph)
             orig_graph_list.append(orig_graph)

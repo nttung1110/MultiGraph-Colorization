@@ -5,7 +5,6 @@ from itertools import combinations
 import os 
 import sys 
 import pickle
-sys.path.append("../")
 from utils_zed.config_zed import cfg_zed
 
 def put_color(reference_color, sketch_img, list_position):

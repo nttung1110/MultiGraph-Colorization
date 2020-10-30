@@ -21,7 +21,7 @@ class HammingLoss(torch.nn.Module):
 
 
 lr_schedules = {
-    "long_halving": (10, (2, 4, 6, 8, 10), 0.5),
+    "long_halving": (50, (2, 4, 6, 8, 10), 0.5),
     "short_halving": (2, (1,), 0.5),
     "long_nodrop": (10, (10,), 1.0),
     "minirun": (1, (10,), 1.0),
@@ -119,7 +119,7 @@ def train_eval_model(model, criterion, optimizer, dataloader, num_epochs, resume
 
             with torch.set_grad_enabled(True):
                 # forward
-                s_pred_list = model(data_list, points_gt_list, edges_list, n_points_gt_list, perm_mat_list, types, tyler_imgs, folder_names, image_names)
+                s_pred_list = model(data_list, points_gt_list, edges_list, n_points_gt_list, perm_mat_list, types, tyler_imgs, folder_names, image_names, None)
 
                 loss = sum([criterion(s_pred, perm_mat) for s_pred, perm_mat in zip(s_pred_list, perm_mat_list)])
                 loss /= len(s_pred_list)
@@ -238,6 +238,12 @@ if __name__ == "__main__":
         dict(params=new_params, lr=cfg.TRAIN.LR),
     ]
     optimizer = optim.Adam(opt_params)
+
+    # new_params = [param for param in model.parameters()]
+    # opt_params = [
+    #     dict(params=new_params, lr=cfg.TRAIN.LR),
+    # ]
+    # optimizer = optim.Adam(opt_params)
 
     if not Path(cfg.model_dir).exists():
         Path(cfg.model_dir).mkdir(parents=True)

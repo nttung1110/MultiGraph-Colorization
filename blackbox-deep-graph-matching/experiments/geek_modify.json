@@ -1,5 +1,5 @@
 {
-    "default_json": "experiments/geek_basic.json",
+    "default_json": "experiments/geek_modify_basic.json",
     "train_sampling": "all",
     "evaluate_only": false,
     "eval_sampling": "all",
@@ -9,6 +9,6 @@
     "TRAIN": {
       "num_graphs_in_matching_instance": 2
     },
-    "model_dir": "results/original_model_with_tyler_feature_single_graph_cnt"
+    "model_dir": "results/original_model_with_tyler_feature_single_graph_lambda_20"
   }
   

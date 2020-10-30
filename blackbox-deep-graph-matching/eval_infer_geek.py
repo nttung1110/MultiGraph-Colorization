@@ -161,6 +161,7 @@ def eval_model(model, dataloader, eval_epoch=None, verbose=False):
                     tyler_imgs,
                     folder_names,
                     image_names,
+                    None,
                     visualize_flag=visualize,
                     visualization_params=visualization_params,
                 )

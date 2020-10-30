@@ -267,6 +267,7 @@ def resize_mask(mask, components, size):
         component = components[i]
         new_mask = rectify_mask(new_mask, component, ratio)
 
+    
     assert len(np.unique(mask)) == len(np.unique(new_mask))
     return new_mask
 

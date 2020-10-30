@@ -6,14 +6,19 @@ blackbox-deep-graph-matching/data/Geek_data
 blackbox-deep-graph-matching/data/Geek_kan_v1
 blackbox-deep-graph-matching/data/Geek_prepare_data
 blackbox-deep-graph-matching/data/Geek_prepare_data_kan
+blackbox-deep-graph-matching/data/overfit_train
+blackbox-deep-graph-matching/data/test_color_only
+blackbox-deep-graph-matching/data/test_one
+blackbox-deep-graph-matching/data/test_one_v1
 blackbox-deep-graph-matching/data/cache
 blackbox-deep-graph-matching/results
 blackbox-deep-graph-matching/train_eval.py
 blackbox-deep-graph-matching/eval.py
+blackbox-deep-graph-matching/inference/hor02_055
+blackbox-deep-graph-matching/BB_GM/new_weight.pth
 blackbox-deep-graph-matching/inference/test_inference
 blackbox-deep-graph-matching/inference/test_inference_2
-blackbox-deep-graph-matching/BB_GM/new_weight.pth
 
-
+blackbox-deep-graph-matching/exp
 
 

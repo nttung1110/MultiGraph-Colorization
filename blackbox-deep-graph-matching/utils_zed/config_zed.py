@@ -8,7 +8,7 @@ __C = edict()
 
 cfg_zed = __C
 
-__C.data_folder = "./test_inference_2"
+__C.data_folder = "./hor02_055"
 __C.combine_classes = False
 # added
 __C.BB_GM = edict()

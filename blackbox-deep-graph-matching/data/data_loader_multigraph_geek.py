@@ -57,15 +57,6 @@ class GMDataset(Dataset):
 
         idx = idx if self.true_epochs else None
         anno_list, perm_mat_list = self.ds.get_k_samples(idx, k=self.num_graphs_in_matching_instance, cls=self.cls, mode=sampling_strategy)
-        for perm_mat in perm_mat_list:
-            if (
-                not perm_mat.size
-                or (perm_mat.size < 2 * 2 and sampling_strategy == "intersection")
-                and not self.true_epochs
-            ):
-                # 'and not self.true_epochs' because we assume all data is valid when sampling a true epoch
-                next_idx = None if idx is None else idx + 1
-                return self.__getitem__(next_idx)
 
         points_gt = [np.array([(kp["x"], kp["y"]) for kp in anno_dict["keypoints"]]) for anno_dict in anno_list]
         n_points_gt = [len(p_gt) for p_gt in points_gt]

@@ -30,7 +30,7 @@ def build_graphs(P_np: np.ndarray, n: int, n_pad: int = None, edge_pad: int = No
                 edge_list[0].append(i)
                 edge_list[1].append(j)
                 features.append(locations_to_features_diffs(*P_np[i], *P_np[j]))
-
+                
     if not features:
         features = np.zeros(shape=(0, 2))
 

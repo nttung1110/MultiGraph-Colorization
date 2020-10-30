@@ -7,9 +7,8 @@ import torch
 import numpy as np
 import os
 
-sys.path.append("/mnt/ai_filestore/home/zed/multi-graph-matching/blackbox-deep-graph-matching")
 
-from transfer_color import vis_color_sketch_transfer, build_binary_combination
+from inference.transfer_color import vis_color_sketch_transfer, build_binary_combination
 def predict_color_sketch(s_pred_list, inputs):
     '''
         s_pred_list: combinatorial matching pairs containing (n-1)! pairs with n is the number
@@ -75,13 +74,18 @@ if __name__ == "__main__":
     model = Net()
     model = model.cuda()
 
-    path_checkpoint = "../results/geek_alpha_test_1/params/0007"
+    path_checkpoint = "../results/geek_augment_train_2/params/0008"
     params_path = os.path.join(path_checkpoint, "params.pt")
     model.load_state_dict(torch.load(params_path))
 
     # process data
     # data_folder = "./test_inference"
-    processor = DataProcessor(cfg_zed.data_folder)
+    type_extract = "no pkl"
+    '''
+        no pkl: user haven't provide the annotated file, model sef-extracted
+        pkl: user have provide the annotated file
+    '''
+    processor = DataProcessor(cfg_zed.data_folder, type_extract)
 
     len_test_data = 2
     batch_size = 1
@@ -123,6 +127,7 @@ if __name__ == "__main__":
                 tyler_imgs,
                 folder_names,
                 image_names,
+                type_extract,
                 is_training=False
             )
         

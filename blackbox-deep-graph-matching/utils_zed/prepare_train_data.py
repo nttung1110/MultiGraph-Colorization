@@ -14,6 +14,8 @@ import pickle
 import cv2
 import matplotlib.pyplot as plt
 
+drop_folder = []
+
 def join_two(p1, p2):
     return os.path.join(p1, p2)
 
@@ -71,7 +73,7 @@ def read_img(path_img):
 
 def convert_components(components):
     components_dict = {}
-    for component in components:
+    for idx, component in components.items():
         label = component["label"]
         components_dict[int(label)] = component 
     
@@ -91,15 +93,18 @@ def read_pkl_and_gen_xml(path_pkl, path_annot_out, is_color, folder_name):
             + is_color: use color or sketch image as training data
     '''
     file_name = path_pkl.split("/")[-1][:-4] # remove extension
-    # print(path_pkl)
-    components_vs_mask = pickle.load(open(path_pkl, "rb"), fix_imports=True, encoding="latin1")
+    components_vs_mask = pickle.load(open(path_pkl, "rb"), encoding="latin1")
     info_components = components_vs_mask["components"]
     res = {}
 
     # read image to get size
-    image = Image.open(path_pkl[:-4]+".png")
+    image = Image.open(path_pkl[:-4]+".tga")
     w, h = image.size
     
+    if len(info_components) <= 3:
+        if folder_name not in drop_folder:
+            drop_folder.append(folder_name)
+        return
     # for idx, component in info_components.items():
     #     centroid = component["centroid"]
 
@@ -112,7 +117,6 @@ def read_pkl_and_gen_xml(path_pkl, path_annot_out, is_color, folder_name):
         label = component["label"]
         x, y = centroid[0], centroid[1]
         res[str(label)] = [int(y), int(x)]
-    
     
     # copy pkl file first or dump new converted components
     targ_annot_component = join_three(path_annot_out, "components", folder_name)
@@ -146,6 +150,9 @@ def prepare_image(path_image_all, path_image_out):
         if not os.path.isdir(join_two(path_image_all, folder_dir)):
             continue 
 
+        if folder_dir in drop_folder:
+            continue
+
         print("Process folder:", folder_dir)
         color_path_in = join_three(path_image_all, folder_dir, "color")
 
@@ -171,6 +178,9 @@ def prepare_image(path_image_all, path_image_out):
         
         num_folder += 1
 
+        if num_folder == 10:
+            break
+
     print("Finish processing " + str(num_folder) +" folders")
     print("Finish processing " + str(num_image) +" images")
 
@@ -180,6 +190,8 @@ def prepare_annot(path_annot_all, path_annot_out):
             + Copy pickle file storing information of components for image into standardized training data
             + Generate keypoints xml file storing information of keypoints for image into standardized training data
     '''
+    num_folder = 0
+
     for folder_dir in natsorted(os.listdir(path_annot_all)):
         if not os.path.isdir(join_two(path_annot_all, folder_dir)):
             continue 
@@ -194,7 +206,11 @@ def prepare_annot(path_annot_all, path_annot_out):
             full_path_anno_pkl = join_two(folder_path, each_annot)
             info_img = read_pkl_and_gen_xml(full_path_anno_pkl, path_annot_out, is_color, folder_dir)
             # Randomly choosing color and sketch for training(1:1 ratio)
-            is_color = not is_color
+            # is_color = not is_color
+        
+        num_folder += 1
+        if num_folder == 10:
+            break
 
 def prepare_split(data_folder, path_root_out):
     '''
@@ -208,12 +224,20 @@ def prepare_split(data_folder, path_root_out):
 
     data = []
     data_folder = join_two(data_folder, "keypoints")
+
+    num_folder = 0
     for folder_name in natsorted(os.listdir(data_folder)):
+        if folder_name in drop_folder:
+            continue
         print(folder_name)
         folder_list = []
         for file_name in os.listdir(join_two(data_folder, folder_name)):
             folder_list.append(folder_name+"/"+file_name)
         data.append(folder_list)
+        
+        num_folder += 1
+        if num_folder == 10:
+            break
 
     train = np.array(data, dtype=object)    
     test = np.array(data, dtype=object)
@@ -226,10 +250,15 @@ def prepare_matching(path_root_in, path_root_out):
     path_root_out = join_two(path_root_out, "matching_info")
     mkdirs(path_root_out)
 
+    num_folder = 0
+
     for folder in natsorted(os.listdir(path_root_in)):
         if not os.path.isdir(join_two(path_root_in, folder)):
             continue 
-        
+
+        if folder in drop_folder:
+            continue
+
         folder_path = join_two(path_root_in, folder)
         annot_matching_path = join_three(folder_path, "PD15_training", "annotations")
 
@@ -244,6 +273,10 @@ def prepare_matching(path_root_in, path_root_out):
             source_file = join_two(annot_matching_path, pairs_fname)
             des_file = join_two(des_folder_path, pairs_fname)
             copy = shutil.copy(source_file, des_file)
+        
+        num_folder += 1
+        if num_folder == 10:
+            break
 
     
 
@@ -251,24 +284,13 @@ if __name__ == "__main__":
     # specify and build path only
 
     # root path to train data
-    path_root_in = "../../stuff/output_for_zed" #non-standardized folder
-    path_root_out = "../data/Geek_kan_v1" #standardized folder
+    path_root_in = "../../stuff/zed_self_prepare" #non-standardized folder
+    # path_root_in = "../exp/tmp" #non-standardized folder
+    path_root_out = "../data/test_color_only" #standardized folder
     mkdirs(path_root_out)
-    #----------------image--------------
-    print("Preparing image")
-    path_image_in = path_root_in
-    path_image_out = join_two(path_root_out, "image")
-    mkdirs(path_image_out)
-
-    sketch_out = join_two(path_image_out, "sketch")
-    color_out = join_two(path_image_out, "color")
-    
-    mkdirs(sketch_out)
-    mkdirs(color_out)
-    prepare_image(path_image_in, path_image_out)
     #----------------annotation---------
     print("Preparing annotation")
-    path_annot_in = path_image_in #same path as image
+    path_annot_in = path_root_in #same path as image
     path_annot_out = join_two(path_root_out, "annotations")
     mkdirs(path_annot_out)
 
@@ -285,11 +307,25 @@ if __name__ == "__main__":
 
     prepare_annot(path_annot_in, path_annot_out)
 
+    #----------------image--------------
+    print("Preparing image")
+    path_image_in = path_root_in
+    path_image_out = join_two(path_root_out, "image")
+    mkdirs(path_image_out)
+
+    sketch_out = join_two(path_image_out, "sketch")
+    color_out = join_two(path_image_out, "color")
+    
+    mkdirs(sketch_out)
+    mkdirs(color_out)
+    prepare_image(path_image_in, path_image_out)
+
     #---------------split--------------
     print("Preparing split")
     prepare_split(path_annot_out, path_root_out)
 
+    print("Drop folder:", drop_folder)
     #---------------matching_info----------
-    print("Preparing matching_ìno")
+    print("Preparing matching_info")
     prepare_matching(path_root_in, path_root_out)
 

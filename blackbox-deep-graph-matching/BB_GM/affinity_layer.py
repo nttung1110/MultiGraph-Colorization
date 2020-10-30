@@ -6,6 +6,13 @@ class InnerProductWithWeightsAffinity(nn.Module):
     def __init__(self, input_dim, output_dim):
         super(InnerProductWithWeightsAffinity, self).__init__()
         self.d = output_dim
+        # self.A = torch.nn.Sequential(
+        #             torch.nn.Linear(input_dim, 512),
+        #             torch.nn.ReLU(),
+        #             torch.nn.Linear(512, 128),
+        #             torch.nn.ReLU(),
+        #             torch.nn.Linear(128, output_dim)
+        #         )
         self.A = torch.nn.Linear(input_dim, output_dim)
 
     def _forward(self, X, Y, weights):
@@ -13,6 +20,9 @@ class InnerProductWithWeightsAffinity(nn.Module):
         coefficients = torch.tanh(self.A(weights))
         res = torch.matmul(X * coefficients, Y.transpose(0, 1))
         res = torch.nn.functional.softplus(res) - 0.5
+
+        # res = torch.matmul(X, Y.transpose(0, 1))
+        # res = torch.nn.functional.softplus(res) - 0.5
         return res
 
     def forward(self, Xs, Ys, Ws):

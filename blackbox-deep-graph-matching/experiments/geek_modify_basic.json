@@ -1,14 +1,14 @@
 {
-    "BATCH_SIZE": 4,
+    "BATCH_SIZE": 2,
     "DATASET_NAME": "Geek",
     "exclude_willow_classes": false,
-    "OUTPUT_PATH": "results/original_model_with_tyler_feature_single_graph_cnt", 
+    "OUTPUT_PATH": "results/original_model_with_tyler_feature_single_graph_lambda_20", 
     "EVAL": {
       "SAMPLES": 20,
       "num_graphs_in_matching_instance": 2
     },
     "BB_GM": {
-      "lambda_val": 80.0,
+      "lambda_val": 150.0,
       "solver_name": "lpmp",
       "solver_params": {
         "timeout": 1000,
@@ -20,7 +20,7 @@
     "eval_sampling": "all",
     "save_checkpoint": true,
     "RANDOM_SEED": 123,
-    "warmstart_path": "results/original_model_with_tyler_feature_single_graph/params/0002",
+    "warmstart_path": null,
     "TRAIN": {
       "EPOCH_ITERS": 2000,
       "LR": 0.002,

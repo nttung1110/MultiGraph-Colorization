@@ -3,6 +3,7 @@ import cv2
 import sys
 import torch
 import numpy as np
+import pickle 
 import os
 
 sys.path.append("../"+os.path.join(os.path.curdir))
@@ -19,8 +20,7 @@ from torch_geometric.data import Data, Batch
 
 
                                 
-sys.path.append("/mnt/ai_filestore/home/zed/multi-graph-matching/hades_painting")
-from rules.color_component_matching import ComponentWrapper, get_component_color
+from hades_painting.rules.color_component_matching import ComponentWrapper, get_component_color
 
 '''
     This scripts is used for inferencing(including both matching and colorizing) for
@@ -35,7 +35,7 @@ def j_2(path1, path2):
 
 
 class DataProcessor():
-    def __init__(self, folder_path):
+    def __init__(self, folder_path, type_extract):
         '''
             Parameters:
                 + folder_path: path to folder_name as above
@@ -43,6 +43,8 @@ class DataProcessor():
         self.num_sketch = 1
         self.sketch_folder = j_2(folder_path, "sketch")
         self.color_folder = j_2(folder_path, "color")
+        self.folder_path = folder_path
+        self.type_extract = type_extract
 
     def read_img(self, path, type_image):
         '''
@@ -64,8 +66,45 @@ class DataProcessor():
             
             zed_img = img.resize((256, 256), resample=Image.BICUBIC, box=(0, 0, 256, 256))
         return tyler_input_img, zed_img
+    
+    def get_points_by_file(self, anno_list):
+        '''
+            This function performs 2 tasks:
+                + Read components of each image in annot file
+                + Use keypoints to represent components 
+            Parameters:
+                anno_list
+            Returned:
+                +anno_list:
+        '''
+        for annot in anno_list:
+            type_img = annot["type_name"]
+            img = annot["tyler_image"]
+            image_name = annot["image_name"]
 
-    def get_points(self, anno_list):
+            kp_list = []
+            path_annot = j_2(self.folder_path, "annot")
+            path_annot = j_2(path_annot, type_img)
+            path_annot = j_2(path_annot, image_name+".pkl")
+            
+            info = pickle.load(open(path_annot, "rb"), fix_imports=True, encoding="latin1")
+            mask, components = info["mask"], info["components"]
+
+            components_tmp = {}
+            for component in components:
+                centroid = component["centroid"]
+                name = component["label"]
+                components_tmp[int(name)] = component
+                x = centroid[0]
+                y = centroid[1]
+                kp_list.append({"x": x, "y": y, "name": name})
+            
+            annot["keypoints"] = kp_list
+            annot["components"] = components_tmp
+
+        return anno_list
+
+    def get_points_by_model(self, anno_list):
         '''
             This function performs 2 tasks:
                 + Extracting components of each image in list_img
@@ -179,7 +218,11 @@ class DataProcessor():
 
         # zed_img_list = [_.cuda() for _ in zed_img_list]
         # get points, n_points, graphs 
-        anno_list = self.get_points(anno_list)
+        if self.type_extract == "pkl":
+            anno_list = self.get_points_by_file(anno_list)
+
+        elif self.type_extract == "no pkl":
+            anno_list = self.get_points_by_model(anno_list)
 
         return anno_list
         # return zed_img_list, p_list, graph_list, n_p, perm_mat, types, tyler_img_list, folder_names, image_names

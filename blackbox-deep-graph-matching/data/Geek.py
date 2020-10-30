@@ -3,6 +3,7 @@ import random
 import xml.etree.ElementTree as ET
 import cv2
 import json
+import torch
 import os
 from pathlib import Path
 from natsort import natsorted
@@ -544,9 +545,6 @@ class Geek:
         self.classes = cfg.Geek.CLASSES
         self.folder_list = self.get_list_folder()
         
-        self.kpt_len = [len(KPT_NAMES[_]) for _ in cfg.Geek.CLASSES]
-
-        self.classes_kpts = {cls: len(KPT_NAMES[cls]) for cls in self.classes}
 
         self.anno_path = Path(anno_path)
         self.img_path = Path(img_path)
@@ -555,31 +553,37 @@ class Geek:
         self.sets = sets
 
         assert sets in ["train", "test"], "No match found for dataset {}".format(sets)
-        cache_name = "geek_" + sets + ".pkl"
-        self.cache_path = Path(cache_path)
-        self.cache_file = self.cache_path / cache_name
+        # cache_name = "geek_" + sets + ".pkl"
+        # self.cache_path = Path(cache_path)
+        # self.cache_file = self.cache_path / cache_name
         # if self.cache_file.exists():
         #     with self.cache_file.open(mode="rb") as f:
         #         self.xml_list = pickle.load(f)
         #     print("xml list loaded from {}".format(self.cache_file))
         # else:
-        print("Caching xml list to {}...".format(self.cache_file))
-        self.cache_path.mkdir(exist_ok=True, parents=True)
+        # print("Caching xml list to {}...".format(self.cache_file))
+        # self.cache_path.mkdir(exist_ok=True, parents=True)
         with np.load(set_path, allow_pickle=True) as f:
             self.xml_list = f[sets]
 
-        # print(self.xml_list)
-        before_filter = sum([len(k) for k in self.xml_list])
-        # self.filter_list()
-        after_filter = sum([len(k) for k in self.xml_list])
+        # # print(self.xml_list)
+        # before_filter = sum([len(k) for k in self.xml_list])
+        # # self.filter_list()
+        # after_filter = sum([len(k) for k in self.xml_list])
         # self.xml_list = []
-        with self.cache_file.open(mode="wb") as f:
-            pickle.dump(self.xml_list, f)
-        print("Filtered {} images to {}. Annotation saved.".format(before_filter, after_filter))
+        # with self.cache_file.open(mode="wb") as f:
+        #     pickle.dump(self.xml_list, f)
+        # print("Filtered {} images to {}. Annotation saved.".format(before_filter, after_filter))
 
     def get_list_folder(self):
         color_image_folder = os.path.join(img_path, "color")
         list_folder = []
+        # drop_folder = ['36', '200', '202', '204', '208', '210', '216', '536', '562', 
+        #                 '570', '592', '604', '784', '818', '1128', '1244', '1268', 
+        #                 '1346', '1388', '1508', '1512', '1532', '1562', '1576', '1750', 
+        #                 '1796', '2014', '2090', '2096', '2100', '2142', '2254', '2366', 
+        #                 '2368', '2454', '2460', '2504', '2596', '2620', '2698', '2816', 
+        #                 '2942', '2946', '3084', '3122', '3214', '3336', '3374', '3412', '3456']
         for folder_name in natsorted(os.listdir(color_image_folder)):
             list_folder.append(folder_name)
 
@@ -606,6 +610,7 @@ class Geek:
         if folder is None:
             folder_id = random.randrange(0, len(self.folder_list))
             folder_name = self.folder_list[folder_id]
+
         elif type(folder) == str:
             folder_name = folder
             folder_id = self.folder_list.index(folder)
@@ -613,7 +618,6 @@ class Geek:
         assert type(cls) == int and 0 <= cls < len(self.classes)
 
         anno_list = []
-        
         for xml_name in random.sample(list(self.xml_list[folder_id]), k): #replace cls by folder
             anno_dict = self.__get_anno_dict_v1(xml_name, cls, folder_name) #replace cls by folder
             if shuffle:
@@ -635,6 +639,8 @@ class Geek:
             image_name_1 = s1["image_name"]
             image_name_2 = s2["image_name"]
 
+            # print(image_name_1, image_name_2)
+            # print("Folder:", folder_name)
             pair_file_name = build_pairs_path(image_name_1, image_name_2)
             # path to info of pair matching
             full_path = os.path.join(cfg.Geek.ROOT_DIR, "matching_info", folder_name, pair_file_name+".json")
@@ -642,30 +648,42 @@ class Geek:
                 pair_match_info = json.load(f)
             
             #exchange s1, s2 so that s1 should be left and s2 should be right
-            name_img_left = pair_match_info["imagePathLeft"].split("/")[-1][-4:]
-            name_img_right = pair_match_info["imagePathRight"].split("/")[-1][-4:]
-
-            if image_name_1 == name_img_right:
-                # exchange
-                tmp = s1 
-                s1 = s2
-                s2 = tmp 
-                image_name_1 = s1["image_name"]
-                image_name_2 = s2["image_name"]
-                perm_mat_list[n] = np.transpose(perm_mat_list[n])
-
+            name_img_left = pair_match_info["imagePathLeft"].split("/")[-1][:-4]
+            name_img_right = pair_match_info["imagePathRight"].split("/")[-1][:-4]
+            # print("name 1:", image_name_1)
+            # print("name right:", name_img_right)
             pair_match_info = pair_match_info["pairs"]
-            for i, keypoint in enumerate(s1["keypoints"]):
-                for j, _keypoint in enumerate(s2["keypoints"]):
-                    # if keypoint["name"] == _keypoint["name"]:
-                    #     perm_mat_list[n][i, j] = 1
-                    key_of_pair = keypoint["name"]+"_"+_keypoint["name"]
-                    
-                    
+            # s1 is left
+            
+            if image_name_1 == name_img_left:
+                for i, keypoint in enumerate(s1["keypoints"]):
+                    for j, _keypoint in enumerate(s2["keypoints"]):
+                        # if keypoint["name"] == _keypoint["name"]:
+                        #     perm_mat_list[n][i, j] = 1
+                        key_of_pair = keypoint["name"]+"_"+_keypoint["name"]
+                        
+                      
 
-                    # check if key of pair exist in annotation file in any order
-                    if key_of_pair in pair_match_info:
-                        perm_mat_list[n][i, j] = 1
+                        # check if key of pair exist in annotation file in any order
+                        if key_of_pair in pair_match_info:
+                            # print("First case:", key_of_pair)
+                            perm_mat_list[n][i, j] = 1
+
+            elif image_name_1 == name_img_right:
+                for i, keypoint in enumerate(s2["keypoints"]):
+                    for j, _keypoint in enumerate(s1["keypoints"]):
+                        # if keypoint["name"] == _keypoint["name"]:
+                        #     perm_mat_list[n][i, j] = 1
+                        key_of_pair = keypoint["name"]+"_"+_keypoint["name"]
+                        
+                        
+
+                        # check if key of pair exist in annotation file in any order
+                        if key_of_pair in pair_match_info:
+                            # print("Second case:", key_of_pair)
+                            perm_mat_list[n][j, i] = 1
+
+        
 
 
         return anno_list, perm_mat_list
